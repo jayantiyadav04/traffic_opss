@@ -1,0 +1,14 @@
+const router = require('express').Router();
+const auth = require('../controllers/authController');
+const { protect } = require('../middleware/authMiddleware');
+const { checkRole } = require('../middleware/roleMiddleware');
+const rateLimiter = require('../middleware/rateLimiter');
+router.post('/register', rateLimiter('register', { max: 10 }), auth.registerUser);
+router.post('/login', rateLimiter('login'), auth.loginUser);
+router.get('/me', protect, auth.getMe);
+router.post('/logout', protect, auth.logout);
+router.patch('/password', protect, rateLimiter('password', { max: 10 }), auth.changePassword);
+router.post('/users', protect, checkRole(['admin']), rateLimiter('provision'), auth.provisionUser);
+router.get('/citizens', protect, checkRole(['admin', 'officer']), auth.findCitizens);
+router.post('/citizens/:id/verify', protect, checkRole(['admin', 'officer']), auth.verifyCitizen);
+module.exports = router;

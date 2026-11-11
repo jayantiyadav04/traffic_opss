@@ -1,0 +1,12 @@
+const router = require('express').Router();
+const controller = require('../controllers/violationController');
+const { protect } = require('../middleware/authMiddleware');
+const { checkRole } = require('../middleware/roleMiddleware');
+router.use(protect);
+router.get('/types', controller.getViolationTypes);
+router.get('/areas', controller.getAreas);
+router.route('/').post(checkRole(['officer', 'admin']), controller.createViolation).get(controller.getViolations);
+router.get('/:id', controller.getViolation);
+router.post('/:id/ownership', checkRole(['officer', 'admin']), controller.reviewOwnership);
+router.put('/:id/pay', checkRole(['officer', 'admin']), controller.markViolationAsPaid);
+module.exports = router;

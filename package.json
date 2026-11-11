@@ -1,0 +1,33 @@
+{
+    "name": "traffic-ops",
+    "version": "1.0.0",
+    "description": "Traffic-Ops MERN Stack Application",
+    "main": "index.js",
+    "scripts": {
+        "start": "npm --prefix server start",
+        "server": "npm --prefix server run dev",
+        "client": "npm --prefix client run dev",
+        "dev": "concurrently \"npm run server\" \"npm run client\"",
+        "install-all": "node scripts/run.mjs install",
+        "build": "npm --prefix client run build",
+        "verify": "node scripts/run.mjs verify",
+        "check:routing": "node scripts/check-routing.mjs",
+        "check:api": "node scripts/check-openapi.mjs",
+        "migrate:money": "node server/migrations/money-v2.js",
+        "payments:reconcile": "node server/scripts/reconcile-payments.js",
+        "test:e2e": "playwright test",
+        "test:load": "node scripts/load-test.mjs"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "engines": {
+        "node": ">=24.13.0 <25",
+        "npm": ">=11 <12"
+    },
+    "devDependencies": {
+        "@apidevtools/swagger-parser": "13.1.0",
+        "@playwright/test": "1.65.0",
+        "concurrently": "^8.2.2"
+    }
+}

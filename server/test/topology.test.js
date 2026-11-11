@@ -1,0 +1,21 @@
+const { test, after } = require('node:test');
+const assert = require('node:assert/strict');
+const { randomUUID } = require('node:crypto');
+const mongoose = require('mongoose');
+process.env.MONGOMS_DOWNLOAD_DIR ||= require('node:path').join(__dirname, '../.cache/mongodb-binaries');
+const { MongoMemoryServer } = require('mongodb-memory-server');
+const request = require('supertest');
+const { ensureReady } = require('../src/config/db');
+const app = require('../src/app');
+let runtime;
+after(async () => { await mongoose.disconnect(); if (runtime) await runtime.stop(); });
+test('standalone database never reports ready or accepts application requests', async () => {
+    process.env.NODE_ENV = 'test';
+    if (process.env.MONGO_URI || process.env.MONGODB_URI) throw new Error('Refusing inherited database configuration.');
+    runtime = await MongoMemoryServer.create({ binary: { version: process.env.MONGOMS_VERSION || '7.0.24' } });
+    await mongoose.connect(runtime.getUri('traffic_ops_test_' + randomUUID().replace(/-/g, '')));
+    await assert.rejects(ensureReady(), { code: 'TRANSACTIONS_REQUIRED' });
+    assert.equal((await request(app).get('/api/health/live')).status, 200);
+    assert.equal((await request(app).get('/api/health/ready')).status, 503);
+    assert.equal((await request(app).post('/api/auth/register').send({})).status, 503);
+});
